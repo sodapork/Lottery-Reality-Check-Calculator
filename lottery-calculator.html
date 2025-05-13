@@ -60,6 +60,25 @@
             background: #e9ecef;
             border-radius: 4px;
         }
+        .tiered-events {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        .tiered-events h4 {
+            margin-top: 0;
+            color: #495057;
+        }
+        .tiered-events ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+        .tiered-events li {
+            margin: 5px 0;
+            color: #6c757d;
+        }
     </style>
 </head>
 <body>
@@ -195,6 +214,18 @@
             }
         ];
 
+        // Add tiered unlikely events with their probabilities
+        const unlikelyEvents = [
+            { probability: 0.0000001, event: "Being struck by lightning twice in the same year" },
+            { probability: 0.000001, event: "Being killed by a vending machine" },
+            { probability: 0.00001, event: "Being attacked by a shark" },
+            { probability: 0.0001, event: "Being struck by lightning" },
+            { probability: 0.001, event: "Being hit by a meteorite" },
+            { probability: 0.01, event: "Being killed by a bee sting" },
+            { probability: 0.1, event: "Being killed in a car accident" },
+            { probability: 1, event: "Being killed by a falling airplane part" }
+        ];
+
         function getRandomAnalogy(texts) {
             return texts[Math.floor(Math.random() * texts.length)];
         }
@@ -217,6 +248,18 @@
             ]);
         }
 
+        function getTieredEvents(probability) {
+            const probDecimal = probability / 100;
+            return unlikelyEvents
+                .filter(event => event.probability > probDecimal)
+                .map(event => ({
+                    ...event,
+                    timesMoreLikely: (event.probability / probDecimal).toLocaleString(undefined, {
+                        maximumFractionDigits: 0
+                    })
+                }));
+        }
+
         function calculate() {
             const game = document.getElementById('game').value;
             const tickets = parseInt(document.getElementById('tickets').value);
@@ -235,8 +278,9 @@
             const expectedValue = totalSpent * (1/data.odds);
             const expectedValuePerYear = expectedValue / years;
             
-            // Get probability analogy
+            // Get probability analogy and tiered events
             const analogy = getProbabilityAnalogy(probability);
+            const tieredEvents = getTieredEvents(probability);
             
             // Display results
             document.getElementById('results').style.display = 'block';
@@ -246,6 +290,14 @@
                 <p><strong>Probability of winning:</strong> ${probability.toFixed(10)}%</p>
                 <p><strong>Total tickets purchased:</strong> ${totalTickets.toLocaleString()}</p>
                 <p><strong>To put this in perspective:</strong> You are ${analogy}</p>
+                <div class="tiered-events">
+                    <h4>Events more likely than winning:</h4>
+                    <ul>
+                        ${tieredEvents.map(event => `
+                            <li>${event.event} (${event.timesMoreLikely}x more likely)</li>
+                        `).join('')}
+                    </ul>
+                </div>
             `;
             
             document.getElementById('spending').innerHTML = `
