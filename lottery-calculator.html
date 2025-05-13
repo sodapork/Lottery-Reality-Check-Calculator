@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lottery Reality Check Calculator</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .calculator {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .results {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+        }
+        .comparison {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h2>Lottery Reality Check Calculator</h2>
+        
+        <div class="input-group">
+            <label for="game">Select Lottery Game:</label>
+            <select id="game">
+                <option value="powerball">Powerball</option>
+                <option value="megamillions">Mega Millions</option>
+                <option value="eurojackpot">EuroJackpot</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="tickets">Number of Tickets per Week:</label>
+            <input type="number" id="tickets" value="1" min="1">
+        </div>
+
+        <div class="input-group">
+            <label for="years">Years of Playing:</label>
+            <input type="number" id="years" value="10" min="1">
+        </div>
+
+        <button onclick="calculate()">Calculate</button>
+
+        <div class="results" id="results" style="display: none;">
+            <h3>Your Results</h3>
+            <div id="odds"></div>
+            <div id="spending"></div>
+            <div id="expected"></div>
+        </div>
+
+        <div class="comparison" id="comparison" style="display: none;">
+            <h3>What You Could Have Instead</h3>
+            <div id="investment"></div>
+        </div>
+    </div>
+
+    <script>
+        const lotteryData = {
+            powerball: {
+                odds: 292201338,
+                ticketPrice: 2,
+                name: "Powerball"
+            },
+            megamillions: {
+                odds: 302575350,
+                ticketPrice: 2,
+                name: "Mega Millions"
+            },
+            eurojackpot: {
+                odds: 139838160,
+                ticketPrice: 2.5,
+                name: "EuroJackpot"
+            }
+        };
+
+        // Add probability analogies
+        const probabilityAnalogies = [
+            { 
+                threshold: 0.0000001, 
+                texts: [
+                    "More likely to be struck by lightning twice in the same year",
+                    "More likely to find a specific grain of sand on all the beaches in the world",
+                    "More likely to win an Olympic gold medal in archery without any training",
+                    "More likely to be killed by a falling airplane part"
+                ]
+            },
+            { 
+                threshold: 0.000001, 
+                texts: [
+                    "More likely to find a four-leaf clover in a football field while blindfolded",
+                    "More likely to be killed by a vending machine",
+                    "More likely to be attacked by a polar bear in Hawaii",
+                    "More likely to win the lottery twice in your lifetime"
+                ]
+            },
+            { 
+                threshold: 0.00001, 
+                texts: [
+                    "More likely to be killed by a vending machine",
+                    "More likely to be attacked by a shark",
+                    "More likely to be struck by a falling satellite",
+                    "More likely to be killed by a falling coconut"
+                ]
+            },
+            { 
+                threshold: 0.0001, 
+                texts: [
+                    "More likely to be attacked by a shark",
+                    "More likely to be killed by a falling airplane part",
+                    "More likely to be struck by lightning",
+                    "More likely to be killed by a bee sting"
+                ]
+            },
+            { 
+                threshold: 0.001, 
+                texts: [
+                    "More likely to be hit by a meteorite",
+                    "More likely to be killed by a falling coconut",
+                    "More likely to be attacked by a bear",
+                    "More likely to be killed by a lightning strike"
+                ]
+            },
+            { 
+                threshold: 0.01, 
+                texts: [
+                    "More likely to be struck by lightning",
+                    "More likely to be killed by a bee sting",
+                    "More likely to be attacked by a dog",
+                    "More likely to be killed in a plane crash"
+                ]
+            },
+            { 
+                threshold: 0.1, 
+                texts: [
+                    "More likely to be killed by a falling coconut",
+                    "More likely to be killed in a car accident",
+                    "More likely to be struck by lightning",
+                    "More likely to be killed by a falling airplane part"
+                ]
+            },
+            { 
+                threshold: 1, 
+                texts: [
+                    "More likely to be killed by a bee sting",
+                    "More likely to be killed in a car accident",
+                    "More likely to be struck by lightning",
+                    "More likely to be killed by a falling airplane part"
+                ]
+            }
+        ];
+
+        function getRandomAnalogy(texts) {
+            return texts[Math.floor(Math.random() * texts.length)];
+        }
+
+        function getProbabilityAnalogy(probability) {
+            // Convert probability to decimal if it's a percentage
+            const probDecimal = probability / 100;
+            
+            // Find the first analogy where the probability is greater than the threshold
+            for (let analogy of probabilityAnalogies) {
+                if (probDecimal > analogy.threshold) {
+                    return getRandomAnalogy(analogy.texts);
+                }
+            }
+            return getRandomAnalogy([
+                "More likely to be struck by lightning while being attacked by a shark during a meteor shower",
+                "More likely to win the lottery while being struck by lightning and attacked by a shark",
+                "More likely to find a four-leaf clover while being struck by lightning and winning the lottery",
+                "More likely to be killed by a vending machine while being struck by lightning and attacked by a shark"
+            ]);
+        }
+
+        function calculate() {
+            const game = document.getElementById('game').value;
+            const tickets = parseInt(document.getElementById('tickets').value);
+            const years = parseInt(document.getElementById('years').value);
+            
+            const data = lotteryData[game];
+            const totalSpent = tickets * data.ticketPrice * 52 * years;
+            const totalTickets = tickets * 52 * years;
+            const probability = (totalTickets / data.odds) * 100;
+            
+            // Calculate potential investment returns (assuming 7% annual return)
+            const monthlyInvestment = tickets * data.ticketPrice * 52 / 12;
+            const investmentValue = calculateInvestment(monthlyInvestment, years * 12, 0.07);
+            
+            // Calculate expected value
+            const expectedValue = totalSpent * (1/data.odds);
+            const expectedValuePerYear = expectedValue / years;
+            
+            // Get probability analogy
+            const analogy = getProbabilityAnalogy(probability);
+            
+            // Display results
+            document.getElementById('results').style.display = 'block';
+            document.getElementById('comparison').style.display = 'block';
+            
+            document.getElementById('odds').innerHTML = `
+                <p><strong>Probability of winning:</strong> ${probability.toFixed(10)}%</p>
+                <p><strong>Total tickets purchased:</strong> ${totalTickets.toLocaleString()}</p>
+                <p><strong>To put this in perspective:</strong> You are ${analogy}</p>
+            `;
+            
+            document.getElementById('spending').innerHTML = `
+                <p><strong>Total money spent:</strong> $${totalSpent.toLocaleString()}</p>
+            `;
+            
+            document.getElementById('expected').innerHTML = `
+                <p><strong>Expected value over ${years} years:</strong> $${expectedValue.toFixed(2)}</p>
+                <p><strong>Expected value per year:</strong> $${expectedValuePerYear.toFixed(2)}</p>
+                <p><strong>Expected return on investment:</strong> ${((expectedValue/totalSpent) * 100).toFixed(6)}%</p>
+            `;
+            
+            document.getElementById('investment').innerHTML = `
+                <p>If you had invested this money instead (assuming 7% annual return):</p>
+                <p><strong>Potential investment value:</strong> $${investmentValue.toLocaleString()}</p>
+                <p><strong>Return on investment:</strong> ${((investmentValue/totalSpent - 1) * 100).toFixed(2)}%</p>
+            `;
+        }
+
+        function calculateInvestment(monthlyPayment, months, annualRate) {
+            const monthlyRate = annualRate / 12;
+            return monthlyPayment * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate);
+        }
+    </script>
+</body>
+</html> 
