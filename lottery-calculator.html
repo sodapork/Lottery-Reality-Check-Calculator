@@ -216,6 +216,7 @@
 
         // Add tiered unlikely events with their probabilities
         const unlikelyEvents = [
+            { probability: 0.00000001, event: "Being killed by a falling airplane part" },
             { probability: 0.0000001, event: "Being struck by lightning twice in the same year" },
             { probability: 0.000001, event: "Being killed by a vending machine" },
             { probability: 0.00001, event: "Being attacked by a shark" },
@@ -223,7 +224,9 @@
             { probability: 0.001, event: "Being hit by a meteorite" },
             { probability: 0.01, event: "Being killed by a bee sting" },
             { probability: 0.1, event: "Being killed in a car accident" },
-            { probability: 1, event: "Being killed by a falling airplane part" }
+            { probability: 0.000000001, event: "Being killed by a falling satellite" },
+            { probability: 0.00000005, event: "Being attacked by a polar bear in Hawaii" },
+            { probability: 0.0000002, event: "Being killed by a falling coconut" }
         ];
 
         function getRandomAnalogy(texts) {
